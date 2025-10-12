@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from converters import text_node_to_html_node
+from converters import text_node_to_html_node, split_nodes_delimiter
 
 
 class TestTextNode(unittest.TestCase):
@@ -58,6 +58,30 @@ class TestTextNode(unittest.TestCase):
             html_node.to_html(),
             '<a href="https://boot.dev">This is a link node</a>'
         )
+
+    def test_split_delimiter_code(self):
+        node = TextNode("This is text with a `code block` word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes[1].text_type, TextType.CODE)
+        self.assertEqual(new_nodes[2].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes[0].text, "This is text with a ")
+        self.assertEqual(new_nodes[1].text, "code block")
+        self.assertEqual(new_nodes[2].text, " word")
+
+    def test_split_delimiter_multiple_types(self):
+        node = TextNode("This is text with `code block 1` something **bold**, _italic_ and `code block 2`", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        new_nodes = split_nodes_delimiter(new_nodes, "**", TextType.BOLD)
+        new_nodes = split_nodes_delimiter(new_nodes, "_", TextType.ITALIC)
+        self.assertEqual(new_nodes[0], TextNode("This is text with ", TextType.TEXT))
+        self.assertEqual(new_nodes[1], TextNode("code block 1", TextType.CODE))
+        self.assertEqual(new_nodes[2], TextNode(" something ", TextType.TEXT))
+        self.assertEqual(new_nodes[3], TextNode("bold", TextType.BOLD))
+        self.assertEqual(new_nodes[4], TextNode(", ", TextType.TEXT))
+        self.assertEqual(new_nodes[5], TextNode("italic", TextType.ITALIC))
+        self.assertEqual(new_nodes[6], TextNode(" and ", TextType.TEXT))
+        self.assertEqual(new_nodes[7], TextNode("code block 2", TextType.CODE))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from converters import text_node_to_html_node, split_nodes_delimiter
+from converters import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links
 
 
 class TestTextNode(unittest.TestCase):
@@ -82,6 +82,48 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(new_nodes[5], TextNode("italic", TextType.ITALIC))
         self.assertEqual(new_nodes[6], TextNode(" and ", TextType.TEXT))
         self.assertEqual(new_nodes[7], TextNode("code block 2", TextType.CODE))
+
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_images_multiple(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) a [link](https://boot.dev) and ![another image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual(
+            [
+                ("image", "https://i.imgur.com/zjjcJKZ.png"),
+                ("another image", "https://i.imgur.com/zjjcJKZ.png")
+            ],
+            matches
+        )
+
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with a [link](https://boot.dev)"
+        )
+        self.assertListEqual(
+            [
+                ("link", "https://boot.dev"),
+            ],
+            matches
+        )
+
+    def test_extract_markdown_links_multiple(self):
+        matches = extract_markdown_links(
+            "This is text with a [link](https://boot.dev) and an ![image](https://i.imgur.com/zjjcJKZ.png) and [another link](https://boot.dev)"
+        )
+        self.assertListEqual(
+            [
+                ("link", "https://boot.dev"),
+                ("another link", "https://boot.dev")
+            ],
+            matches
+        )
+
 
 
 if __name__ == "__main__":

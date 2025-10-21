@@ -1,15 +1,9 @@
 import unittest
 
-from textnode import TextNode, TextType
 from converters import (
-    text_node_to_html_node,
-    split_nodes_delimiter,
-    extract_markdown_images,
-    extract_markdown_links,
-    split_nodes_image,
-    split_nodes_link,
-    text_to_textnodes,
-    markdown_to_blocks
+    markdown_to_blocks,
+    block_to_block_type,
+    BlockType
 )
 
 
@@ -31,5 +25,39 @@ This is the same paragraph on a new line
                 "This is **bolded** paragraph",
                 "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
                 "- This is a list\n- with items",
+            ],
+        )
+
+    def test_block_to_block_type(self):
+        blocks = [
+                "This is **bolded** paragraph",
+                "# h1",
+                "## h2",
+                "### h3",
+                "#### h4",
+                "##### h5",
+                "###### h6",
+                "- This is a list\n- with items",
+                "``` This is a code block\n- with multiple lines```",
+                "1. This is an ordered list\n2. with items\n3. and more items",
+                ">This is a quote\n>spanning\n>multiple lines",
+            ]
+        block_types = []
+        for block in blocks:
+            block_types.append(block_to_block_type(block))
+        self.assertEqual(
+            block_types,
+            [
+                BlockType.PARAGRAPH,
+                BlockType.HEADING,
+                BlockType.HEADING,
+                BlockType.HEADING,
+                BlockType.HEADING,
+                BlockType.HEADING,
+                BlockType.HEADING,
+                BlockType.UNORDERED_LIST,
+                BlockType.CODE,
+                BlockType.ORDERED_LIST,
+                BlockType.QUOTE,
             ],
         )

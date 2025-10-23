@@ -2,15 +2,17 @@ import re
 from textnode import TextNode, TextType
 from leafnode import LeafNode
 from enum import Enum
+from htmlnode import HTMLNode
+from parentnode import ParentNode
 
 
 class BlockType(Enum):
-    PARAGRAPH = "paragraph"
-    HEADING = "heading"
+    PARAGRAPH = "p"
+    HEADING = "h"
     CODE = "code"
-    QUOTE = "quote"
-    UNORDERED_LIST = "unordered_list"
-    ORDERED_LIST = "ordered_list"
+    QUOTE = "blockquote"
+    UNORDERED_LIST = "ul"
+    ORDERED_LIST = "ol"
 
 
 def text_node_to_html_node(text_node):
@@ -155,3 +157,73 @@ def block_to_block_type(markdown):
         if ol:
             return BlockType.ORDERED_LIST
     return BlockType.PARAGRAPH
+
+
+def block_to_htmlnode(block):
+    block_type = block_to_block_type(block)
+    match block_type:
+        case BlockType.PARAGRAPH:
+            node = ParentNode("p", [])
+            parts = []
+            for line in block.split("\n"):
+                parts.append(line.strip())
+            textnodes = text_to_textnodes(" ".join(parts))
+            for textnode in textnodes:
+                node.children.append(text_node_to_html_node(textnode))
+            return node
+        case BlockType.UNORDERED_LIST:
+            node = ParentNode("ul", [])
+            for line in block.split("\n"):
+                child = ParentNode("li", [])
+                textnodes = text_to_textnodes(line[2:])
+                for textnode in textnodes:
+                    child.children.append(text_node_to_html_node(textnode))
+                node.children.append(child)
+            return node
+        case BlockType.ORDERED_LIST:
+            node = ParentNode("ol", [])
+            for line in block.split("\n"):
+                child = ParentNode("li", [])
+                textnodes = text_to_textnodes(line.split('. ', 1)[1])
+                for textnode in textnodes:
+                    child.children.append(text_node_to_html_node(textnode))
+                node.children.append(child)
+            return node
+        case BlockType.QUOTE:
+            node = ParentNode("blockquote", [])
+            for line in block.split("\n"):
+                textnodes = text_to_textnodes(line[1:])
+                for textnode in textnodes:
+                    node.children.append(text_node_to_html_node(textnode))
+            return node
+        case BlockType.HEADING:
+            node = ParentNode(None, [])
+            if block.startswith("# "):
+                node.tag = "h1"
+            if block.startswith("## "):
+                node.tag = "h2"
+            if block.startswith("### "):
+                node.tag = "h3"
+            if block.startswith("#### "):
+                node.tag = "h4"
+            if block.startswith("##### "):
+                node.tag = "h5"
+            if block.startswith("###### "):
+                node.tag = "h6"
+            textnodes = text_to_textnodes(block.split(" ", 1)[1])
+            for textnode in textnodes:
+                node.append(text_node_to_html_node(textnode))
+            return node
+        case BlockType.CODE:
+            node = ParentNode("pre", [])
+            child = text_node_to_html_node(TextNode(block[3:-3].lstrip(), TextType.CODE))
+            node.children.append(child)
+            return node
+
+
+def markdown_to_html_node(markdown):
+    node = ParentNode("div", [])
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        node.children.append(block_to_htmlnode(block))
+    return node

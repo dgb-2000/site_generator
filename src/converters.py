@@ -2,7 +2,6 @@ import re
 from textnode import TextNode, TextType
 from leafnode import LeafNode
 from enum import Enum
-from htmlnode import HTMLNode
 from parentnode import ParentNode
 
 
@@ -192,7 +191,7 @@ def block_to_htmlnode(block):
         case BlockType.QUOTE:
             node = ParentNode("blockquote", [])
             for line in block.split("\n"):
-                textnodes = text_to_textnodes(line[1:])
+                textnodes = text_to_textnodes(line[2:])
                 for textnode in textnodes:
                     node.children.append(text_node_to_html_node(textnode))
             return node
@@ -212,7 +211,7 @@ def block_to_htmlnode(block):
                 node.tag = "h6"
             textnodes = text_to_textnodes(block.split(" ", 1)[1])
             for textnode in textnodes:
-                node.append(text_node_to_html_node(textnode))
+                node.children.append(text_node_to_html_node(textnode))
             return node
         case BlockType.CODE:
             node = ParentNode("pre", [])

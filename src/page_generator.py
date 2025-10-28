@@ -9,7 +9,7 @@ def extract_title(markdown):
     raise Exception("No header found")
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     file = open(from_path)
     file_contents = file.read()
@@ -26,11 +26,11 @@ def generate_page(from_path, template_path, dest_path):
     new_file.close()
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     for path in os.listdir(dir_path_content):
         path = os.path.join(dir_path_content, path)
         if not os.path.isfile(path):
-            generate_pages_recursive(path, template_path, dest_dir_path)
+            generate_pages_recursive(path, template_path, dest_dir_path, basepath)
         elif path.endswith(".md"):
             dest_path = os.path.join(dest_dir_path, os.path.relpath(path, "content"))
-            generate_page(path, template_path, dest_path.replace(".md", ".html"))
+            generate_page(path, template_path, dest_path.replace(".md", ".html"), basepath)

@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from page_generator import generate_pages_recursive
 
 
@@ -9,9 +10,9 @@ def copy_static(dir):
             path = os.path.join(dir, item)
             new_dir = ""
             if "/" in dir:
-                new_dir = os.path.join("public", dir.split("/", 1)[1])
+                new_dir = os.path.join("docs", dir.split("/", 1)[1])
             else:
-                new_dir = "public"
+                new_dir = "docs"
             if os.path.isfile(path):
                 if not os.path.exists(new_dir):
                     os.mkdir(new_dir)
@@ -23,10 +24,15 @@ def copy_static(dir):
 
 
 def main():
-    shutil.rmtree("public")
-    os.mkdir("public")
+    basepath = "/"
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    print(basepath)
+    if os.path.exists("docs"):
+        shutil.rmtree("docs")
+    os.mkdir("docs")
     copy_static("static")
-    generate_pages_recursive("content", "template.html", "public")
+    generate_pages_recursive("content", "template.html", "docs", basepath)
 
 
 if __name__ == "__main__":

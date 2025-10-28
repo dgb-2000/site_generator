@@ -22,7 +22,13 @@ def generate_page(from_path, template_path, dest_path, basepath):
     if not os.path.exists(os.path.dirname(dest_path)):
         os.makedirs(os.path.dirname(dest_path))
     new_file = open(dest_path, 'x')
-    new_file.write(template_contents.replace("{{ Title }}", title).replace("{{ Content }}", content))
+    new_file.write(
+        template_contents
+        .replace("{{ Title }}", title)
+        .replace("{{ Content }}", content)
+        .replace('href="/', f'href="{basepath}')
+        .replace('src="/', f'src="{basepath}')
+    )
     new_file.close()
 
 

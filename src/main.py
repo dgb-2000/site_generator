@@ -1,6 +1,6 @@
 import os
 import shutil
-from page_generator import generate_page
+from page_generator import generate_pages_recursive
 
 
 def copy_static(dir):
@@ -26,7 +26,7 @@ def main():
     shutil.rmtree("public")
     os.mkdir("public")
     copy_static("static")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
 
 
 if __name__ == "__main__":
